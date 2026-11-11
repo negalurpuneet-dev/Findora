@@ -1,0 +1,78 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Employees | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">OWNER CONTROLS</p><h1>Employees</h1><p>Create and manage authorized employee accounts. Teammates are never superusers and cannot create other administrators.</p></header>
+<section class="team-admin-layout staff-team-layout">
+    <article class="admin-panel team-create-panel">
+        <div class="admin-panel-heading"><div><p class="eyebrow">NEW TEAMMATE</p><h2>Create an administrator account</h2></div></div>
+        <p class="muted">Choose a username and temporary password, then select only the permissions this teammate needs. Their first sign-in requires a password change.</p>
+        <form method="post" class="team-admin-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                {% if field.name != 'permissions' %}
+                <div class="form-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="help-text">{{ field.help_text|safe }}</small>{% endif %}
+                    {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+            <fieldset class="permission-fieldset">
+                <legend>Grant permissions</legend>
+                <p class="help-text">Select the Findora records and actions required for this role. The dashboard viewing permission is selected by default.</p>
+                <div class="permission-grid">
+                    {% for choice in form.permissions %}
+                    <label class="permission-option">{{ choice.tag }}<span>{{ choice.choice_label }}</span></label>
+                    {% endfor %}
+                </div>
+                {% for error in form.permissions.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+            </fieldset>
+            <button class="button" type="submit">Create teammate account</button>
+        </form>
+    </article>
+
+    <article class="admin-panel team-list-panel">
+        <div class="admin-panel-heading"><div><p class="eyebrow">ACCESS CONTROL</p><h2>Current teammates</h2></div><span class="queue-count">{{ teammates|length }}</span></div>
+        {% if teammates %}
+        <div class="team-list">
+            {% for account in teammates %}
+            <details class="team-account">
+                <summary>
+                    <span class="avatar" aria-hidden="true">{{ account.user.username|slice:":1"|upper }}</span>
+                    <span class="team-account-summary"><strong>{{ account.user.username }}</strong><small>{{ account.user.email|default:"No email listed" }} · {% if account.user.is_active %}Active{% else %}Deactivated{% endif %} · Last login: {{ account.user.last_login|date:"M j, Y H:i"|default:"Never" }}</small></span>
+                    <span class="team-account-edit">Manage</span>
+                </summary>
+                <div class="team-account-body">
+                    <form method="post" action="{% url 'team_admin_update' account.user_id %}" data-confirm="Update this employee's access and permissions?">
+                        {% csrf_token %}
+                        <label class="check-label"><input type="checkbox" name="is_active" value="on" {% if account.user.is_active %}checked{% endif %}> Account active</label>
+                        <fieldset class="permission-fieldset">
+                            <legend>Assigned permissions</legend>
+                            <div class="permission-grid">
+                                {% for permission in available_permissions %}
+                                <label class="permission-option"><input type="checkbox" name="permissions" value="{{ permission.id }}" {% if permission in account.user.user_permissions.all %}checked{% endif %}><span>{{ permission.content_type.model }}: {{ permission.name }}</span></label>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                        <button class="button button-small" type="submit">Save access</button>
+                    </form>
+                    <form method="post" action="{% url 'team_admin_reset_password' account.user_id %}" class="reset-password-form" data-confirm="Reset this employee's password? They will need to change it at their next sign-in.">
+                        {% csrf_token %}
+                        <label for="reset-password-{{ account.user_id }}">Set a temporary password</label>
+                        <input id="reset-password-{{ account.user_id }}" name="new_password1" type="password" autocomplete="new-password" required>
+                        <input name="new_password2" type="password" autocomplete="new-password" aria-label="Confirm temporary password" required>
+                        <button class="button button-outline button-small" type="submit">Reset password</button>
+                    </form>
+                    {% if account.must_change_password %}<p class="password-notice">Password change required at next sign-in.</p>{% endif %}
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="admin-empty"><strong>No teammate accounts yet</strong><p>Create the first account using the form.</p></div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

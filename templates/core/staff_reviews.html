@@ -1,0 +1,12 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Reviews | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">CUSTOMER FEEDBACK</p><h1>Reviews</h1><p>Moderate public review visibility while retaining the review record.</p></header>
+<section class="admin-panel staff-record-panel">
+    <form method="get" class="staff-filter-form"><label for="review-search">Search reviews</label><input id="review-search" type="search" name="q" value="{{ query }}" placeholder="Comment, service, customer"><select name="rating" aria-label="Filter by rating"><option value="">All ratings</option>{% for value in "12345" %}<option value="{{ value }}" {% if selected_rating == value %}selected{% endif %}>{{ value }} stars</option>{% endfor %}</select><button class="button button-small" type="submit">Filter</button></form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Rating</th><th>Service / provider</th><th>Customer</th><th>Review</th><th>Visibility</th>{% if can_change %}<th>Moderate</th>{% endif %}</tr></thead><tbody>
+    {% for review in reviews %}<tr><td>{{ review.rating }} / 5</td><td>{{ review.booking.listing.title }}<small>{{ review.booking.listing.provider.get_full_name|default:review.booking.listing.provider.username }}</small></td><td>{{ review.booking.customer.get_full_name|default:review.booking.customer.username }}</td><td>{{ review.comment|default:"No written comment."|truncatechars:180 }}</td><td>{% if review.is_public %}Public{% else %}Hidden{% endif %}</td>{% if can_change %}<td><form method="post">{% csrf_token %}<input type="hidden" name="review_id" value="{{ review.id }}"><button class="table-action" name="action" value="{% if review.is_public %}hide{% else %}publish{% endif %}">{% if review.is_public %}Hide review{% else %}Publish review{% endif %}</button></form></td>{% endif %}</tr>
+    {% empty %}<tr><td colspan="{% if can_change %}6{% else %}5{% endif %}">No reviews match your filters.</td></tr>{% endfor %}
+    </tbody></table></div>{% include 'core/staff_pagination.html' with page_obj=reviews %}
+</section>
+{% endblock %}

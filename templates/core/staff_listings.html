@@ -1,0 +1,17 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Service listings | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">MARKETPLACE</p><h1>Service listings</h1><p>Manage provider offerings, categories, service areas, and visibility.</p></header>
+<section class="staff-workspace">
+    {% if can_add %}<article class="admin-panel staff-create-panel"><h2>Add service listing</h2><form method="post" class="staff-inline-form">{% csrf_token %}
+    {% for field in form %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+    <button class="button" type="submit">Create listing</button></form></article>{% endif %}
+    <section class="admin-panel">
+        <form method="get" class="staff-filter-form"><label for="listing-search">Search listings</label><input id="listing-search" type="search" name="q" value="{{ query }}" placeholder="Service, provider, category, area"><select name="category" aria-label="Filter by category"><option value="">All categories</option>{% for category in categories %}<option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>{% endfor %}</select><button class="button button-small" type="submit">Search</button></form>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Service</th><th>Provider</th><th>Category</th><th>Area</th><th>Price from</th><th>Status</th>{% if can_change %}<th></th>{% endif %}</tr></thead><tbody>
+        {% for listing in listings %}<tr><td><strong>{{ listing.title }}</strong><small>{{ listing.description|truncatechars:90 }}</small></td><td>{{ listing.provider.get_full_name|default:listing.provider.username }}</td><td>{{ listing.category.name }}</td><td>{{ listing.service_area }}</td><td>{% if listing.price_from %}{{ listing.price_from }}{% else %}Not listed{% endif %}</td><td>{% if listing.is_active %}Active{% else %}Inactive{% endif %}</td>{% if can_change %}<td><a class="table-action" href="{% url 'staff_listing_edit' listing.id %}">Edit</a></td>{% endif %}</tr>
+        {% empty %}<tr><td colspan="7">No service listings match your filters.</td></tr>{% endfor %}
+        </tbody></table></div>{% include 'core/staff_pagination.html' with page_obj=listings %}
+    </section>
+</section>
+{% endblock %}

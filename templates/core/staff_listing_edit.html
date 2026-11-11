@@ -1,0 +1,8 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Edit {{ listing.title }} | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">MARKETPLACE</p><h1>Edit service listing</h1><p>Update the public listing record for {{ listing.title }}.</p></header>
+<section class="admin-panel staff-form-panel"><form method="post" class="staff-edit-form">{% csrf_token %}
+{% for field in form %}<div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>{% endfor %}
+<button class="button" type="submit">Save listing</button><a class="button button-outline" href="{% url 'staff_listings' %}">Cancel</a></form></section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}{{ title }} | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">ACCOUNT SECURITY</p><h1>{{ title }}</h1><p>Use a unique password and keep credentials private.</p></header>
+<section class="admin-panel staff-form-panel">
+    <form method="post" class="staff-edit-form">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+        <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+            {{ field }}
+            {% if field.help_text %}<small class="help-text">{{ field.help_text|safe }}</small>{% endif %}
+            {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+        {% endfor %}
+        <button class="button" type="submit">{{ submit_label }}</button>
+    </form>
+</section>
+{% endblock %}

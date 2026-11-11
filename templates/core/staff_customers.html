@@ -1,0 +1,13 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Customers | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">PEOPLE</p><h1>Customers</h1><p>View customer account status and booking activity.</p></header>
+<section class="admin-panel staff-record-panel">
+    <form method="get" class="staff-filter-form"><label for="customer-search">Search customers</label><input id="customer-search" type="search" name="q" value="{{ query }}" placeholder="Name, username, email"><select name="active" aria-label="Filter by account status"><option value="">All account states</option><option value="true" {% if active_filter == 'true' %}selected{% endif %}>Active</option><option value="false" {% if active_filter == 'false' %}selected{% endif %}>Inactive</option></select><button class="button button-small" type="submit">Filter</button></form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Joined</th><th>Account status</th><th>Bookings</th>{% if can_manage_accounts %}<th>Access</th>{% endif %}</tr></thead><tbody>
+    {% for customer in customers %}<tr><td><strong>{{ customer.get_full_name|default:customer.username }}</strong><small>@{{ customer.username }}{% if customer.email %} · {{ customer.email }}{% endif %}</small>{% if user.is_superuser or perms.core.change_profile %}<small><a href="{% url 'admin:core_profile_change' customer.profile.pk %}">View profile details</a></small>{% endif %}</td><td>{{ customer.date_joined|date:"M j, Y" }}</td><td>{% if customer.is_active %}Active{% else %}Inactive{% endif %}</td><td><a href="{% url 'staff_bookings' %}?customer={{ customer.id }}">{{ customer.booking_count }} bookings</a></td>
+    {% if can_manage_accounts %}<td><form method="post" data-confirm="Change this customer account's access?">{% csrf_token %}<input type="hidden" name="customer_id" value="{{ customer.id }}"><button class="table-action" name="action" value="{% if customer.is_active %}deactivate{% else %}activate{% endif %}">{% if customer.is_active %}Deactivate{% else %}Activate{% endif %}</button></form></td>{% endif %}</tr>
+    {% empty %}<tr><td colspan="5">No customers match your filters.</td></tr>{% endfor %}
+    </tbody></table></div>{% include 'core/staff_pagination.html' with page_obj=customers %}
+</section>
+{% endblock %}

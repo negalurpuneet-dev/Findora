@@ -1,0 +1,6 @@
+{% extends 'core/base.html' %}
+{% block title %}Notifications | Findora{% endblock %}
+{% block content %}
+<section class="page-heading"><p class="eyebrow">UPDATES</p><h1>Your notifications</h1><p>Booking and service updates for your Findora account.</p></section>
+<section class="section">{% if notifications %}<form method="post" action="{% url 'mark_notifications_read' %}" class="notification-action">{% csrf_token %}<button class="button button-outline" type="submit">Mark all as read</button></form><div class="notification-list">{% for notification in notifications %}<a href="{{ notification.link|default:'/bookings/' }}"><span class="status-dot{% if notification.is_read %} status-pending{% endif %}"></span><span>{{ notification.message }}<small>{{ notification.created_at|date:"M j, Y, g:i A" }}</small></span></a>{% endfor %}</div>{% else %}<div class="empty-state"><h3>You're all caught up</h3><p>New booking updates will appear here.</p></div>{% endif %}</section>
+{% endblock %}

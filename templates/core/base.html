@@ -1,0 +1,61 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#176b52">
+    <meta name="description" content="Findora helps you discover local service professionals and track your booking requests.">
+    <title>{% block title %}Findora | Find Local Help. Book with Confidence.{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/site.css' %}">
+    <script src="{% static 'core/site.js' %}" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="{% url 'home' %}" aria-label="Findora home"><span class="brand-mark" aria-hidden="true">F</span><span>Findora</span></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Open navigation menu">
+        <svg class="menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+        <a href="{% url 'home' %}"{% if request.resolver_match.url_name == 'home' %} aria-current="page"{% endif %}>Home</a>
+        <a href="{% url 'service_list' %}"{% if request.resolver_match.url_name == 'service_list' or request.resolver_match.url_name == 'category_detail' %} aria-current="page"{% endif %}>Find services</a>
+        <a href="{% url 'home' %}#how-it-works">How it works</a>
+        <a href="{% url 'about' %}"{% if request.resolver_match.url_name == 'about' %} aria-current="page"{% endif %}>About</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}"{% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'staff_dashboard' %} aria-current="page"{% endif %}>Dashboard</a>
+            {% if not user.is_staff %}<a class="button button-small nav-join" href="{% url 'booking_list' %}">My bookings</a>{% endif %}
+            <form class="inline-form" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="nav-button" type="submit">Log out</button></form>
+        {% else %}
+            <a href="{% url 'login' %}"{% if request.resolver_match.url_name == 'login' %} aria-current="page"{% endif %}>Log in</a>
+            <a class="button button-small nav-join" href="{% url 'register' %}">Join Findora</a>
+        {% endif %}
+        <a class="button button-small button-outline nav-staff" href="{% url 'staff_login' %}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 2.9 8 7 10 4.1-2 7-5.5 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
+            Staff Admin
+        </a>
+    </nav>
+</header>
+<main>
+    {% if messages %}
+    <div class="messages" aria-live="polite">
+        {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+    <div class="footer-brand"><a class="brand" href="{% url 'home' %}"><span class="brand-mark" aria-hidden="true">F</span><span>Findora</span></a><p>Find Local Help. Book with Confidence.</p></div>
+    <nav class="footer-links" aria-label="Footer navigation">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'service_list' %}">Find services</a>
+        <a href="{% url 'about' %}">About</a>
+        {% if user.is_authenticated %}
+            {% if not user.is_staff %}<a href="{% url 'complaint_create' %}">Contact & feedback</a>{% endif %}
+        {% else %}<a href="{% url 'login' %}?next={% url 'complaint_create' %}">Contact & feedback</a>{% endif %}
+        <a href="{% url 'login' %}">Log in</a>
+        <a href="{% url 'register' %}">Create account</a>
+    </nav>
+    <small class="footer-note">Provider availability and service outcomes are not guaranteed.</small>
+</footer>
+</body>
+</html>

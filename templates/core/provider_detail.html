@@ -1,0 +1,9 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ provider }} | Findora{% endblock %}
+{% block content %}
+<section class="provider-profile page-heading">
+    <span class="avatar avatar-large">{{ provider.user.first_name|default:provider.user.username|slice:":1"|upper }}</span>
+    <div><p class="eyebrow">VERIFIED SERVICE PROVIDER</p><h1>{{ provider.business_name|default:provider.user.get_full_name|default:provider.user.username }}</h1><p>{{ provider.bio|default:"This provider has not added a bio yet." }}</p><p class="provider-facts">{{ provider.experience_years }} years experience <span>·</span> {{ provider.service_areas|default:"Service area not listed" }} <span>·</span> {{ provider.availability|default:"Availability not listed" }}</p></div>
+</section>
+<section class="section"><div class="section-heading"><div><p class="eyebrow">AVAILABLE SERVICES</p><h2>Choose a service</h2></div></div>{% include 'core/listing_cards.html' with listings=listings %}</section>
+{% endblock %}

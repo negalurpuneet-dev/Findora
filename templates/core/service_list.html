@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% block title %}Find services | Findora{% endblock %}
+{% block content %}
+<section class="page-heading"><p class="eyebrow">DISCOVER LOCAL SERVICES</p><h1>Find a professional</h1><p>Search verified local listings by service, category, or area.</p></section>
+<section class="search-layout">
+    <aside class="filter-panel"><h2>Refine search</h2><form method="get" action="{% url 'service_list' %}">
+        <label for="q">Service or provider</label><input id="q" name="q" value="{{ query }}">
+        <label for="category">Category</label><select id="category" name="category"><option value="">All categories</option>{% for item in categories %}<option value="{{ item.id }}" {% if selected_category == item.id|stringformat:"s" %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select>
+        <label for="locality">Locality</label><input id="locality" name="locality" value="{{ locality }}" placeholder="e.g. your neighborhood">
+        <label for="experience">Minimum experience (years)</label><input id="experience" name="min_experience" type="number" min="0" value="{{ request.GET.min_experience }}">
+        <label for="rating">Minimum rating</label><select id="rating" name="min_rating"><option value="">Any rating</option>{% for value in "12345" %}<option value="{{ value }}" {% if request.GET.min_rating == value %}selected{% endif %}>{{ value }} stars or more</option>{% endfor %}</select>
+        <label for="min-price">Minimum price (₹)</label><input id="min-price" name="min_price" type="number" min="0" step="0.01" value="{{ request.GET.min_price }}">
+        <label for="max-price">Maximum price (₹)</label><input id="max-price" name="max_price" type="number" min="0" step="0.01" value="{{ request.GET.max_price }}">
+        <label class="check-label"><input type="checkbox" name="available" value="1" {% if request.GET.available == "1" %}checked{% endif %}> Availability listed</label>
+        <button class="button button-full" type="submit">Apply filters</button><a class="clear-link" href="{% url 'service_list' %}">Clear filters</a>
+    </form></aside>
+    <div class="results">{% if filter_errors %}<div class="form-errors" role="alert">{% for error in filter_errors %}<p>{{ error }}</p>{% endfor %}</div>{% endif %}<p class="result-count">{{ page_obj.paginator.count }} service{{ page_obj.paginator.count|pluralize }} found</p>{% include 'core/listing_cards.html' with listings=page_obj.object_list %}
+    {% if page_obj.has_other_pages %}<nav class="pagination" aria-label="Search result pages">{% if page_obj.has_previous %}<a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">← Previous</a>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next →</a>{% endif %}</nav>{% endif %}
+    </div>
+</section>
+{% endblock %}

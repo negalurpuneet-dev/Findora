@@ -1,0 +1,27 @@
+{% if listings %}
+<div class="listing-grid">
+    {% for listing in listings %}
+    <article class="listing-card">
+        <div class="listing-top">
+            <span class="pill">{{ listing.category.name }}</span>
+            <span class="rating">
+                {% if listing.avg_rating %}<svg viewBox="0 0 24 24" aria-label="Average rating"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg> {{ listing.avg_rating|floatformat:1 }}{% else %}No reviews yet{% endif %}
+            </span>
+        </div>
+        <h3><a href="{% url 'provider_detail' listing.provider_id %}">{{ listing.title }}</a></h3>
+        <p>{{ listing.description|truncatewords:22 }}</p>
+        <div class="provider-line">
+            <span class="avatar" aria-hidden="true">{{ listing.provider.first_name|default:listing.provider.username|slice:":1"|upper }}</span>
+            <span class="provider-summary"><strong>{{ listing.provider.provider_profile.business_name|default:listing.provider.get_full_name|default:listing.provider.username }}</strong><small>{{ listing.service_area }} · {{ listing.provider.provider_profile.experience_years }} years' experience</small></span>
+            <span class="verified-mark" title="Verified provider" aria-label="Verified provider">✓</span>
+        </div>
+        <div class="listing-bottom">
+            <span>{% if listing.price_from %}From ₹{{ listing.price_from }}{% else %}Ask for pricing{% endif %}</span>
+            <span class="listing-actions"><a href="{% url 'provider_detail' listing.provider_id %}">View profile</a>{% if user.id != listing.provider_id and not user.is_staff %}{% if not user.is_authenticated or user.profile.role == 'customer' %}<a class="request-link" href="{% url 'booking_create' listing.id %}">Request service</a>{% endif %}{% endif %}</span>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><span class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg></span><h3>No providers available yet</h3><p>Try another service area, or register as a provider to build a listing.</p><div class="empty-actions"><a class="button button-outline" href="{% url 'service_list' %}">Browse services</a><a class="button" href="{% url 'register' %}?role=provider">Register as a provider</a></div></div>
+{% endif %}

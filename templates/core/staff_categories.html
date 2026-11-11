@@ -1,0 +1,30 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Categories | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">CATALOG</p><h1>Service categories</h1><p>Manage the categories customers use to discover local professionals.</p></header>
+<section class="staff-workspace">
+    {% if can_add %}
+    <article class="admin-panel staff-create-panel">
+        <h2>Add a category</h2>
+        <form method="post" class="staff-inline-form">{% csrf_token %}<input type="hidden" name="action" value="create">
+            {% for field in form %}
+            <div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+            {% endfor %}
+            <button class="button" type="submit">Add category</button>
+        </form>
+    </article>
+    {% endif %}
+    {% if action_errors %}<div class="form-errors" role="alert">{{ action_errors }}</div>{% endif %}
+    <section class="admin-panel">
+        <form method="get" class="staff-filter-form"><label for="category-search">Search categories</label><input id="category-search" type="search" name="q" value="{{ query }}" placeholder="Name or description"><select name="active" aria-label="Filter by category status"><option value="">All statuses</option><option value="true" {% if active_filter == 'true' %}selected{% endif %}>Active</option><option value="false" {% if active_filter == 'false' %}selected{% endif %}>Inactive</option></select><button class="button button-small" type="submit">Filter</button></form>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Category</th><th>Description</th><th>Listings</th><th>Providers</th><th>Status</th>{% if can_change %}<th>Manage</th>{% endif %}</tr></thead><tbody>
+        {% for category in categories %}
+        <tr><td><strong>{% if category.icon %}{{ category.icon }} · {% endif %}{{ category.name }}</strong><small>{{ category.slug }}</small></td><td>{{ category.description|default:"—" }}</td><td><a href="{% url 'staff_listings' %}?category={{ category.id }}">{{ category.listing_count }} listings</a></td><td>{{ category.provider_count }}</td><td><span class="pill">{% if category.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        {% if can_change %}<td><details class="staff-row-edit"><summary>Edit</summary><form method="post">{% csrf_token %}<input type="hidden" name="category_id" value="{{ category.id }}"><label>Name<input name="name" value="{{ category.name }}" required maxlength="80"></label><label>Description<input name="description" value="{{ category.description }}" maxlength="240"></label><label>Icon identifier<select name="icon"><option value="">Default</option><option value="wrench" {% if category.icon == 'wrench' %}selected{% endif %}>Wrench</option><option value="home" {% if category.icon == 'home' %}selected{% endif %}>Home</option><option value="cleaning" {% if category.icon == 'cleaning' %}selected{% endif %}>Cleaning</option><option value="paintbrush" {% if category.icon == 'paintbrush' %}selected{% endif %}>Painting</option><option value="bolt" {% if category.icon == 'bolt' %}selected{% endif %}>Electrical</option></select></label><label class="check-label"><input type="checkbox" name="is_active" {% if category.is_active %}checked{% endif %}> Active</label><button class="button button-small" type="submit">Save category</button></form></details>{% endif %}
+        </tr>
+        {% empty %}<tr><td colspan="6">No categories match your filters.</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% include 'core/staff_pagination.html' with page_obj=categories %}
+    </section>
+</section>
+{% endblock %}

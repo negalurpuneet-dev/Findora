@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 440" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Local service professionals at work</title>
+  <desc id="desc">A friendly illustration of a home, a service professional, and tools.</desc>
+  <path d="M44 360c60-48 117-68 187-57 76 12 109 49 190 29 36-9 62-24 96-14v100H44V360Z" fill="#E9F4EE"/>
+  <circle cx="281" cy="207" r="159" fill="#F3F7F1"/>
+  <path d="m127 205 153-126 153 126v138H127V205Z" fill="#fff" stroke="#176B52" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M102 210 280 61l178 149" stroke="#176B52" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M237 343v-94c0-24 19-43 43-43s43 19 43 43v94" fill="#DCECE2" stroke="#176B52" stroke-width="7"/>
+  <path d="M176 248h30v36h-30zM354 248h30v36h-30z" fill="#DCECE2" stroke="#176B52" stroke-width="6"/>
+  <circle cx="280" cy="162" r="34" fill="#E9B18A"/>
+  <path d="M246 158c1-27 17-44 37-44 20 0 34 15 35 39-11-2-22-9-29-18-9 12-25 20-43 23Z" fill="#263C35"/>
+  <path d="M221 259c0-33 26-59 59-59s59 26 59 59v84H221v-84Z" fill="#176B52"/>
+  <path d="m279 231 18 25-18 22-18-22 18-25Z" fill="#fff"/>
+  <path d="M398 117h55M426 89v56" stroke="#D99B5E" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="128" cy="119" r="10" fill="#D99B5E"/>
+  <path d="M84 307c-18-14-18-38 0-52 19 14 19 38 0 52Z" fill="#A9CBB6"/>
+  <path d="M84 307v35" stroke="#176B52" stroke-width="5" stroke-linecap="round"/>
+  <path d="M470 307c-18-14-18-38 0-52 19 14 19 38 0 52Z" fill="#A9CBB6"/>
+  <path d="M470 307v35" stroke="#176B52" stroke-width="5" stroke-linecap="round"/>
+</svg>

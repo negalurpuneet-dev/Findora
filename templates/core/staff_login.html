@@ -1,0 +1,40 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Administrator sign in | Findora</title>
+    <link rel="stylesheet" href="{% static 'core/site.css' %}">
+    <script src="{% static 'core/site.js' %}" defer></script>
+</head>
+<body class="staff-login-body">
+<main class="staff-login-card">
+    <a class="staff-login-brand" href="{% url 'home' %}"><span class="brand-mark">F</span><span>Findora<small>PRIVATE ADMINISTRATION</small></span></a>
+    <p class="eyebrow">SECURE STAFF ACCESS</p>
+    <h1>Welcome back</h1>
+    <p class="muted">Sign in with your authorized Findora administrator account.</p>
+    <form method="post" class="staff-login-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+        <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% if field.name == 'password' %}
+            <div class="staff-password-field">
+                {{ field }}
+                <button class="staff-password-toggle" type="button" aria-controls="{{ field.id_for_label }}" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            {% else %}
+            {{ field }}
+            {% endif %}
+            {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+        </div>
+        {% endfor %}
+        <button class="button button-full" type="submit">Sign in to administration</button>
+    </form>
+    <a class="staff-login-back" href="{% url 'home' %}">Return to the public website</a>
+</main>
+</body>
+</html>

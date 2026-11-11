@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ title }} | Findora{% endblock %}
+{% block content %}
+<section class="form-page">
+    <div class="form-intro"><p class="eyebrow">FINDORA</p><h1>{{ title }}</h1><p class="muted">{% if title == 'Welcome back' %}Log in to manage your services and bookings.{% elif title == 'Create your account' %}Create an account to find trusted help or offer your professional services.{% else %}Keep your Findora information up to date.{% endif %}</p></div>
+    <form class="form-card" method="post">{% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+            <div class="form-field"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark"> *</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small class="help-text">{{ field.help_text|safe }}</small>{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
+        {% endfor %}
+        <button class="button button-full" type="submit">{{ submit_label|default:"Continue" }}</button>
+        {% if title == 'Welcome back' %}<p class="form-footnote">New to Findora? <a href="{% url 'register' %}">Create an account</a></p>{% endif %}
+        {% if title == 'Create your account' %}<p class="form-footnote">Already registered? <a href="{% url 'login' %}">Log in</a></p>{% endif %}
+    </form>
+</section>
+{% endblock %}

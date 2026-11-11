@@ -1,0 +1,39 @@
+{% extends 'core/base.html' %}
+{% block title %}Customer dashboard | Findora{% endblock %}
+{% block content %}
+<section class="dashboard-heading">
+    <div><p class="eyebrow">YOUR FINDORA</p><h1>Welcome, {{ user.first_name|default:user.username }}</h1><p>Keep track of your service requests and find your next local professional.</p></div>
+    <a class="button" href="{% url 'service_list' %}">Find a service</a>
+</section>
+<section class="dashboard-stats" aria-label="Your booking overview">
+    <article><span>Total requests</span><strong>{{ booking_count }}</strong></article>
+    <article><span>Awaiting a response</span><strong>{{ pending_count }}</strong></article>
+    <article><span>Completed services</span><strong>{{ completed_count }}</strong></article>
+</section>
+<section class="dashboard-grid">
+    <div class="dashboard-main">
+        <div class="section-heading"><div><p class="eyebrow">YOUR REQUESTS</p><h2>Recent bookings</h2></div><a class="text-link" href="{% url 'booking_list' %}">View all bookings <span aria-hidden="true">→</span></a></div>
+        {% if bookings %}
+        <div class="booking-stack">
+            {% for booking in bookings %}
+            <article class="booking-card"><div><span class="pill status-{{ booking.status }}">{{ booking.get_status_display }}</span><h3>{{ booking.listing.title }}</h3><p>{{ booking.listing.provider.get_full_name|default:booking.listing.provider.username }} · {{ booking.preferred_date }} at {{ booking.preferred_time|time:"g:i A" }}</p></div></article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state"><h3>Your service journey starts here</h3><p>Explore verified local providers and send a booking request.</p><a class="button" href="{% url 'service_list' %}">Browse services</a></div>
+        {% endif %}
+    </div>
+    <aside class="dashboard-side">
+        <div class="side-card"><h2>Quick links</h2><a href="{% url 'service_list' %}">Find a service <span aria-hidden="true">→</span></a><a href="{% url 'profile_update' %}">Edit your profile <span aria-hidden="true">→</span></a><a href="{% url 'booking_list' %}">Booking history <span aria-hidden="true">→</span></a><a href="{% url 'notifications' %}">Notifications <span aria-hidden="true">→</span></a><a href="{% url 'complaint_create' %}">Contact support <span aria-hidden="true">→</span></a></div>
+        <div class="side-card"><h2>Recent updates</h2>{% for notification in notifications %}<p class="notification-line">{{ notification.message }}</p>{% empty %}<p class="muted">Booking updates will appear here.</p>{% endfor %}<a href="{% url 'notifications' %}">All notifications <span aria-hidden="true">→</span></a></div>
+    </aside>
+</section>
+<section class="section dashboard-reviews">
+    <div class="section-heading"><div><p class="eyebrow">YOUR FEEDBACK</p><h2>Recent reviews</h2></div></div>
+    {% if reviews %}
+    <div class="review-grid">{% for review in reviews %}
+        <article class="review-card"><span class="rating">Rated {{ review.rating }} out of 5</span><h3>{{ review.booking.listing.title }}</h3><p>{{ review.comment|default:"No written comment." }}</p><small class="muted">Provider: {{ review.booking.listing.provider.get_full_name|default:review.booking.listing.provider.username }}</small></article>
+    {% endfor %}</div>
+    {% else %}<p class="muted">Reviews you leave after completed services will appear here.</p>{% endif %}
+</section>
+{% endblock %}

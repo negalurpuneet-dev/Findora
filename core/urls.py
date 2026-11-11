@@ -1,0 +1,42 @@
+from django.contrib.auth import views as auth_views
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('about/', views.about, name='about'),
+    path('services/', views.service_list, name='service_list'),
+    path('services/<slug:slug>/', views.category_detail, name='category_detail'),
+    path('providers/<int:provider_id>/', views.provider_detail, name='provider_detail'),
+    path('register/', views.register, name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name='core/form_page.html', extra_context={'title': 'Welcome back', 'submit_label': 'Log in'}), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('dashboard/', views.dashboard, name='dashboard'),
+    path('profile/', views.profile_update, name='profile_update'),
+    path('provider/profile/', views.provider_profile_update, name='provider_profile_update'),
+    path('provider/listings/new/', views.listing_create, name='listing_create'),
+    path('provider/listings/<int:listing_id>/edit/', views.listing_update, name='listing_update'),
+    path('bookings/<int:booking_id>/request/', views.booking_create, name='booking_create'),
+    path('bookings/', views.booking_list, name='booking_list'),
+    path('bookings/<int:booking_id>/transition/', views.booking_transition, name='booking_transition'),
+    path('bookings/<int:booking_id>/review/', views.review_create, name='review_create'),
+    path('complaints/new/', views.complaint_create, name='complaint_create'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/read/', views.mark_notifications_read, name='mark_notifications_read'),
+    path('staff/login/', views.staff_login, name='staff_login'),
+    path('staff/profile/', views.staff_profile, name='staff_profile'),
+    path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
+    path('staff/categories/', views.staff_categories, name='staff_categories'),
+    path('staff/listings/', views.staff_listings, name='staff_listings'),
+    path('staff/listings/<int:listing_id>/', views.staff_listing_edit, name='staff_listing_edit'),
+    path('staff/providers/', views.staff_providers, name='staff_providers'),
+    path('staff/customers/', views.staff_customers, name='staff_customers'),
+    path('staff/bookings/', views.staff_bookings, name='staff_bookings'),
+    path('staff/reviews/', views.staff_reviews, name='staff_reviews'),
+    path('staff/complaints/', views.staff_complaints, name='staff_complaints'),
+    path('staff/team/', views.team_admins, name='team_admins'),
+    path('staff/team/<int:user_id>/update/', views.team_admin_update, name='team_admin_update'),
+    path('staff/team/<int:user_id>/reset-password/', views.team_admin_reset_password, name='team_admin_reset_password'),
+    path('staff/change-password/', views.team_admin_password_change, name='team_admin_password_change'),
+]

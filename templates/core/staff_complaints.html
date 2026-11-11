@@ -1,0 +1,12 @@
+{% extends 'core/admin_base.html' %}
+{% block title %}Complaints | Findora Admin{% endblock %}
+{% block admin_content %}
+<header class="staff-page-heading"><p class="eyebrow">CUSTOMER SUPPORT</p><h1>Complaints</h1><p>Review customer reports and record resolution notes for accountability.</p></header>
+<section class="admin-panel staff-record-panel">
+    <form method="get" class="staff-filter-form"><label for="complaint-search">Search complaints</label><input id="complaint-search" type="search" name="q" value="{{ query }}" placeholder="Subject, message, account"><select name="status" aria-label="Filter by complaint status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="button button-small" type="submit">Filter</button></form>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Complaint</th><th>Submitted by</th><th>Booking</th><th>Message</th><th>Manage status and resolution</th></tr></thead><tbody>
+    {% for complaint in complaints %}<tr><td><strong>#{{ complaint.id }} · {{ complaint.subject }}</strong><small>{{ complaint.created_at|date:"M j, Y" }} · {{ complaint.get_status_display }}</small></td><td>{{ complaint.submitted_by.get_full_name|default:complaint.submitted_by.username }}</td><td>{% if complaint.booking_id %}#{{ complaint.booking_id }}{% else %}—{% endif %}</td><td>{{ complaint.message|truncatechars:220 }}</td><td>{% if can_change %}<form method="post" class="staff-resolution-form">{% csrf_token %}<input type="hidden" name="complaint_id" value="{{ complaint.id }}"><label>Status<select name="status">{% for value,label in statuses %}<option value="{{ value }}" {% if complaint.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><label>Resolution notes<textarea name="resolution_notes" rows="2">{{ complaint.resolution_notes }}</textarea></label><button class="table-action" type="submit">Save resolution</button></form>{% else %}{{ complaint.resolution_notes|default:"No resolution notes." }}{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5">No complaints match your filters.</td></tr>{% endfor %}
+    </tbody></table></div>{% include 'core/staff_pagination.html' with page_obj=complaints %}
+</section>
+{% endblock %}

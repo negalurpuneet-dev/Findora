@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+{% block title %}Bookings | Findora{% endblock %}
+{% block content %}
+<section class="page-heading"><p class="eyebrow">BOOKING HISTORY</p><h1>Service requests</h1><p>See request details and follow each service's status.</p></section>
+<section class="section">{% if bookings %}<div class="booking-stack">{% for booking in bookings %}<article class="booking-card booking-full"><div class="booking-info"><span class="pill status-{{ booking.status }}">{{ booking.get_status_display }}</span><h2>{{ booking.listing.title }}</h2><p>Customer: {{ booking.customer.get_full_name|default:booking.customer.username }} · Provider: {{ booking.listing.provider.get_full_name|default:booking.listing.provider.username }}</p><p>{{ booking.preferred_date }} at {{ booking.preferred_time|time:"g:i A" }} · {{ booking.locality }}</p><p>{{ booking.issue_description }}</p>{% if booking.review %}<p class="rating">Rated {{ booking.review.rating }} out of 5 — {{ booking.review.comment }}</p>{% endif %}</div><div class="action-row">
+{% if user.is_superuser or perms.core.change_booking %}<a class="button button-outline button-small" href="/admin/core/booking/{{ booking.id }}/change/">Manage</a>
+{% elif user.id == booking.listing.provider_id %}
+    {% if booking.status == 'pending' %}<form method="post" action="{% url 'booking_transition' booking.id %}">{% csrf_token %}<button class="button button-small" name="action" value="accept">Accept</button></form><form method="post" action="{% url 'booking_transition' booking.id %}">{% csrf_token %}<button class="button button-small button-danger" name="action" value="reject">Reject</button></form>{% endif %}
+    {% if booking.status == 'accepted' %}<form method="post" action="{% url 'booking_transition' booking.id %}">{% csrf_token %}<button class="button button-small" name="action" value="start">Start service</button></form>{% endif %}
+    {% if booking.status == 'in_progress' %}<form method="post" action="{% url 'booking_transition' booking.id %}">{% csrf_token %}<button class="button button-small" name="action" value="complete">Mark completed</button></form>{% endif %}
+{% elif user.id == booking.customer_id %}
+    {% if booking.status == 'pending' or booking.status == 'accepted' %}<form method="post" action="{% url 'booking_transition' booking.id %}" data-confirm="Cancel this booking request?">{% csrf_token %}<button class="button button-small button-outline" name="action" value="cancel">Cancel request</button></form>{% endif %}
+    {% if booking.status == 'completed' and not booking.review %}<a class="button button-small" href="{% url 'review_create' booking.id %}">Leave a review</a>{% endif %}
+{% endif %}
+</div></article>{% endfor %}</div>{% else %}<div class="empty-state"><h3>No bookings yet</h3><p>Service requests you send or receive will appear here.</p><a class="button" href="{% url 'service_list' %}">Find a service</a></div>{% endif %}</section>
+{% endblock %}
