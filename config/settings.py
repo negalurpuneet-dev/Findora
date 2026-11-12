@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
+from urllib.parse import urlsplit
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,20 +29,51 @@ def load_env_file(path: Path) -> None:
             os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
 
+load_env_file(BASE_DIR / '.env.local')
 load_env_file(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-local-development-only')
+IS_VERCEL = os.environ.get('VERCEL') == '1' or bool(os.environ.get('VERCEL_URL'))
+DEBUG = os.environ.get('DJANGO_DEBUG', 'false' if IS_VERCEL else 'true').lower() == 'true'
+if IS_VERCEL and DEBUG:
+    raise ImproperlyConfigured('Set DJANGO_DEBUG=False on Vercel.')
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
-if not DEBUG and SECRET_KEY == 'django-insecure-local-development-only':
-    raise ImproperlyConfigured('Set DJANGO_SECRET_KEY before running with DJANGO_DEBUG=False.')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured('Set DJANGO_SECRET_KEY before running with DJANGO_DEBUG=False.')
+    SECRET_KEY = 'django-insecure-local-development-only'
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
+vercel_hosts = set()
+if IS_VERCEL:
+    vercel_hosts.add('findora-pbk5tw85h-negalurpuneet-dev.vercel.app')
+    for variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
+        value = os.environ.get(variable, '').strip()
+        if value:
+            hostname = urlsplit(value if '://' in value else f'//{value}').hostname
+            if hostname:
+                vercel_hosts.add(hostname)
+
+default_hosts = 'localhost,127.0.0.1' if DEBUG else ''
+allowed_hosts = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', default_hosts).split(',')
+    if host.strip()
+]
+ALLOWED_HOSTS = list(dict.fromkeys([*allowed_hosts, *sorted(vercel_hosts)]))
+
+csrf_origins = [
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys([
+    *csrf_origins,
+    *(f'https://{host}' for host in sorted(vercel_hosts)),
+]))
 
 
 # Application definition
@@ -91,6 +123,20 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+required_database_variables = ('DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT')
+missing_database_variables = [
+    name for name in required_database_variables if not os.environ.get(name)
+]
+if not DEBUG and missing_database_variables:
+    raise ImproperlyConfigured(
+        'Set these PostgreSQL environment variables: '
+        + ', '.join(missing_database_variables)
+    )
+
+database_sslmode = os.environ.get('DB_SSLMODE', 'require' if not DEBUG else '').strip()
+if IS_VERCEL and database_sslmode.lower() != 'require':
+    raise ImproperlyConfigured('Set DB_SSLMODE=require for the Neon database on Vercel.')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -99,7 +145,7 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('DB_PORT', '5432'),
-        'OPTIONS': {'sslmode': os.environ['DB_SSLMODE']} if os.environ.get('DB_SSLMODE') else {},
+        'OPTIONS': {'sslmode': database_sslmode} if database_sslmode else {},
     }
 }
 

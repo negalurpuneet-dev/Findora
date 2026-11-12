@@ -31,7 +31,7 @@ No external maps, AI, payment, email, or SMS credentials are needed for core fun
 
 1. Create and activate a virtual environment if needed.
 2. Install the project dependencies with `pip install -r requirements.txt`.
-3. Copy `.env.example` to `.env`, then set `DJANGO_SECRET_KEY` and `DB_PASSWORD` for your local PostgreSQL installation. The settings loader reads `.env`; it is excluded from Git.
+3. Copy `.env.example` to `.env`, then set `DJANGO_SECRET_KEY` and `DB_PASSWORD` for your local PostgreSQL installation. The settings loader reads `.env` and `.env.local`; both are excluded from Git.
 4. Confirm PostgreSQL is running and that the configured user can access the existing `findora_db`. The application does not create, drop, or reset that database.
 5. From the project directory, run:
 
@@ -86,7 +86,26 @@ python manage.py makemigrations --check --dry-run
 python manage.py test
 ```
 
-The configured database engine is PostgreSQL. Set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` in `.env` or the deployment environment. Do not switch to SQLite to work around a PostgreSQL connection or migration error.
+The configured database engine is PostgreSQL. Set `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT` in `.env` or the deployment environment. Production uses `DB_SSLMODE=require` by default; set it explicitly for Neon. Do not switch to SQLite to work around a PostgreSQL connection or migration error.
+
+## Deploying to Vercel with Neon
+
+Vercel automatically detects this Django project from `manage.py`, uses `config.wsgi:application`, and collects static files because `STATIC_ROOT` is configured. No separate `vercel.json`, API wrapper, or custom build command is required. `requirements.txt` already includes Django, the psycopg PostgreSQL driver, Gunicorn, and WhiteNoise. WhiteNoise remains enabled for local/`vercel dev` use; Vercel serves collected static assets from its CDN.
+
+In the Vercel project settings, add these environment variables for the deployment environments you use:
+
+- `DJANGO_SECRET_KEY`: a unique, long random secret; do not commit it.
+- `DJANGO_DEBUG`: `False`.
+- `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`: the connection values from Neon.
+- `DB_SSLMODE`: `require`.
+- `DJANGO_ALLOWED_HOSTS`: optional comma-separated hostnames for any custom domains. Vercel's `VERCEL_URL` and `VERCEL_PROJECT_PRODUCTION_URL` are added automatically, along with this project's current Vercel hostname.
+- `CSRF_TRUSTED_ORIGINS`: optional comma-separated HTTPS origins for custom domains (for example, `https://findora.example.com`). HTTPS origins for the detected Vercel deployment hostnames are added automatically.
+
+The settings default to development mode on a regular local run, but default to `DEBUG=False` on Vercel and reject an explicit `DJANGO_DEBUG=True` there. Production startup also fails clearly if the secret key or required PostgreSQL variables are missing. `.env.local` is supported for local commands that use environment values pulled from Vercel; keep that file private.
+
+Apply the existing migrations to Neon after configuring the Neon variables, for example by pulling them to `.env.local` and running `python manage.py migrate` once from a trusted local machine. This preserves existing records and creates only the tables/changes represented by migrations `0001`–`0007`. Do not run migrations as part of every Vercel build or reset the database. A successful local migration requires valid Neon credentials and network access; Django's system checks alone do not prove database connectivity.
+
+The current models do not define file/image upload fields, so no media storage setting is needed. Vercel's function filesystem is ephemeral; if uploads are added later, store them in durable object storage rather than the local `media/` directory.
 
 ## Deployment notes
 
