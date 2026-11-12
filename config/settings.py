@@ -36,7 +36,11 @@ load_env_file(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-IS_VERCEL = os.environ.get('VERCEL') == '1' or bool(os.environ.get('VERCEL_URL'))
+IS_VERCEL = (
+    os.environ.get('VERCEL') == '1'
+    or bool(os.environ.get('VERCEL_URL'))
+    or bool(os.environ.get('VERCEL_ENV'))
+)
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false' if IS_VERCEL else 'true').lower() == 'true'
 if IS_VERCEL and DEBUG:
     raise ImproperlyConfigured('Set DJANGO_DEBUG=False on Vercel.')
@@ -47,15 +51,13 @@ if not SECRET_KEY:
         raise ImproperlyConfigured('Set DJANGO_SECRET_KEY before running with DJANGO_DEBUG=False.')
     SECRET_KEY = 'django-insecure-local-development-only'
 
-vercel_hosts = set()
-if IS_VERCEL:
-    vercel_hosts.add('findora-pbk5tw85h-negalurpuneet-dev.vercel.app')
-    for variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
-        value = os.environ.get(variable, '').strip()
-        if value:
-            hostname = urlsplit(value if '://' in value else f'//{value}').hostname
-            if hostname:
-                vercel_hosts.add(hostname)
+vercel_hosts = {'findora-pbk5tw85h-negalurpuneet-dev.vercel.app'}
+for variable in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL'):
+    value = os.environ.get(variable, '').strip()
+    if value:
+        hostname = urlsplit(value if '://' in value else f'//{value}').hostname
+        if hostname:
+            vercel_hosts.add(hostname)
 
 default_hosts = 'localhost,127.0.0.1' if DEBUG else ''
 allowed_hosts = [
